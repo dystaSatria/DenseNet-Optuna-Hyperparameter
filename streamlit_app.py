@@ -334,7 +334,7 @@ st.markdown("""
 
 # Title with enhanced hacker styling
 st.markdown('<h1 class="main-header">🧠 ALZHEIMER CLASSIFICATION NEURAL NETWORK</h1>', unsafe_allow_html=True)
-st.markdown('<h1 class="main-header">>>> DenseNet | Optuna Hyperparameter Optimization <<<</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">DenseNet | Optuna Hyperparameter Optimization</h1>', unsafe_allow_html=True)
 
 # Sidebar
 st.sidebar.header("🔧 SYSTEM CONFIGURATION")
@@ -357,7 +357,7 @@ if not available_dirs:
 # Sidebar options
 st.sidebar.subheader("🎯 NEURAL NETWORK SELECTION")
 selected_model = st.sidebar.selectbox(
-    ">>> SELECT TARGET MODEL:",
+    "SELECT TARGET MODEL:",
     available_dirs,
     help="Choose which DenseNet model to analyze"
 )
@@ -448,7 +448,7 @@ def convert_notebook_to_python(notebook_path, output_path):
         return False, str(e)
 
 # Main content
-st.header(f"🚀 >>> {selected_model} NEURAL NETWORK ANALYSIS DASHBOARD <<<")
+st.header(f"🚀 {selected_model} NEURAL NETWORK ANALYSIS DASHBOARD")
 
 # Get files in selected directory
 model_files = get_directory_files(selected_model)
@@ -471,7 +471,7 @@ with col3:
 # Status card with hacker styling
 st.markdown(f"""
 <div class="folder-card">
-    <h4>📁 >>> {selected_model} SYSTEM STATUS <<<</h4>
+    <h4>📁 {selected_model} SYSTEM STATUS</h4>
     <p><strong>[DIRECTORY]:</strong> {selected_model}/</p>
     <p><strong>[TOTAL_FILES]:</strong> {len(model_files)}</p>
     <p><strong>[RESULTS_STATUS]:</strong> {"✅ AVAILABLE" if len(csv_files) > 0 else "❌ NOT_FOUND"}</p>
@@ -484,15 +484,15 @@ st.markdown(f"""
 tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏆 OPTIMAL_RESULTS", "📊 METRICS_ANALYSIS", "📈 DATA_VISUALIZATION", "📋 FILE_SYSTEM", "🔧 NOTEBOOK_CONTROL"])
 
 with tab1:
-    st.header("🏆 >>> OPTIMAL HYPERPARAMETERS & PERFORMANCE METRICS <<<")
+    st.header("🏆 OPTIMAL HYPERPARAMETERS & PERFORMANCE METRICS")
     
     # Load best hyperparameters
     best_params = read_best_hyperparameters(selected_model)
     if best_params:
-        st.subheader("📝 >>> OPTIMAL HYPERPARAMETER CONFIGURATION <<<")
-        st.text_area(">>> HYPERPARAMETERS:", best_params, height=200)
+        st.subheader("📝 OPTIMAL HYPERPARAMETER CONFIGURATION")
+        st.text_area("HYPERPARAMETERS:", best_params, height=200)
     else:
-        st.info(">>> WARNING: best_hyperparameters.txt NOT FOUND <<<")
+        st.info("WARNING: best_hyperparameters.txt NOT FOUND")
     
     # Show key metrics files
     col1, col2 = st.columns(2)
@@ -501,7 +501,7 @@ with tab1:
         # Best hybrid metrics
         best_hybrid_file = os.path.join(selected_model, "best_hybrid_per_class_metrics.csv")
         if os.path.exists(best_hybrid_file):
-            st.subheader("🎯 >>> HYBRID MODEL PERFORMANCE <<<")
+            st.subheader("🎯 HYBRID MODEL PERFORMANCE")
             df_hybrid = load_csv_data(best_hybrid_file)
             if df_hybrid is not None:
                 st.dataframe(df_hybrid, use_container_width=True)
@@ -510,7 +510,7 @@ with tab1:
         # DenseNet metrics
         densenet_metrics_file = os.path.join(selected_model, "densenet_per_class_metrics.csv")
         if os.path.exists(densenet_metrics_file):
-            st.subheader("🧠 >>> DENSENET MODEL PERFORMANCE <<<")
+            st.subheader("🧠 DENSENET MODEL PERFORMANCE")
             df_densenet = load_csv_data(densenet_metrics_file)
             if df_densenet is not None:
                 st.dataframe(df_densenet, use_container_width=True)
@@ -518,7 +518,7 @@ with tab1:
     # ROC AUC Comparison
     roc_file = os.path.join(selected_model, "roc_auc_comparison.csv")
     if os.path.exists(roc_file):
-        st.subheader("📈 >>> ROC AUC PERFORMANCE COMPARISON <<<")
+        st.subheader("📈 ROC AUC PERFORMANCE COMPARISON")
         df_roc = load_csv_data(roc_file)
         if df_roc is not None:
             st.dataframe(df_roc, use_container_width=True)
@@ -532,19 +532,19 @@ with tab1:
                     pass
 
 with tab2:
-    st.header("📊 >>> DETAILED PERFORMANCE METRICS ANALYSIS <<<")
+    st.header("📊 DETAILED PERFORMANCE METRICS ANALYSIS")
     
     # All models metrics
     all_models_file = os.path.join(selected_model, "all_models_metrics.csv")
     if os.path.exists(all_models_file):
-        st.subheader("🔍 >>> COMPREHENSIVE MODEL COMPARISON <<<")
+        st.subheader("🔍 COMPREHENSIVE MODEL COMPARISON")
         df_all = load_csv_data(all_models_file)
         if df_all is not None:
             st.dataframe(df_all, use_container_width=True)
             
             # Show summary statistics
             if not df_all.empty:
-                st.subheader("📈 >>> STATISTICAL ANALYSIS <<<")
+                st.subheader("📈 STATISTICAL ANALYSIS")
                 numeric_cols = df_all.select_dtypes(include=['float64', 'int64']).columns
                 if len(numeric_cols) > 0:
                     st.dataframe(df_all[numeric_cols].describe(), use_container_width=True)
@@ -552,7 +552,7 @@ with tab2:
     # SVM Optimization Results
     svm_file = os.path.join(selected_model, "svm_optimization_results.csv")
     if os.path.exists(svm_file):
-        st.subheader("⚙️ >>> SVM OPTIMIZATION RESULTS <<<")
+        st.subheader("⚙️ SVM OPTIMIZATION RESULTS")
         df_svm = load_csv_data(svm_file)
         if df_svm is not None:
             st.dataframe(df_svm.head(20), use_container_width=True)
@@ -561,11 +561,11 @@ with tab2:
             if 'score' in df_svm.columns or 'accuracy' in df_svm.columns:
                 score_col = 'score' if 'score' in df_svm.columns else 'accuracy'
                 best_svm = df_svm.loc[df_svm[score_col].idxmax()]
-                st.subheader("🏅 >>> OPTIMAL SVM CONFIGURATION <<<")
+                st.subheader("🏅 OPTIMAL SVM CONFIGURATION")
                 st.json(best_svm.to_dict())
 
 with tab3:
-    st.header("📈 >>> NEURAL NETWORK VISUALIZATION MATRIX <<<")
+    st.header("📈 NEURAL NETWORK VISUALIZATION MATRIX")
     
     # Display all PNG files
     png_files = [f for f in model_files.keys() if f.endswith('.png')]
@@ -579,43 +579,43 @@ with tab3:
         other_plots = [f for f in png_files if f not in confusion_matrices + training_plots + comparison_plots + roc_plots]
         
         if confusion_matrices:
-            st.subheader("🎯 >>> CONFUSION MATRIX ANALYSIS <<<")
+            st.subheader("🎯 CONFUSION MATRIX ANALYSIS")
             cols = st.columns(min(2, len(confusion_matrices)))
             for i, plot_file in enumerate(confusion_matrices):
                 with cols[i % 2]:
-                    display_image(model_files[plot_file], f">>> {plot_file.replace('.png', '').replace('_', ' ').upper()} <<<")
+                    display_image(model_files[plot_file], f"{plot_file.replace('.png', '').replace('_', ' ').upper()}")
         
         if training_plots:
-            st.subheader("📚 >>> TRAINING HISTORY ANALYSIS <<<")
+            st.subheader("📚 TRAINING HISTORY ANALYSIS")
             for plot_file in training_plots:
-                display_image(model_files[plot_file], f">>> {plot_file.replace('.png', '').replace('_', ' ').upper()} <<<")
+                display_image(model_files[plot_file], f"{plot_file.replace('.png', '').replace('_', ' ').upper()}")
         
         if comparison_plots:
-            st.subheader("⚖️ >>> MODEL COMPARISON ANALYSIS <<<")
+            st.subheader("⚖️ MODEL COMPARISON ANALYSIS")
             cols = st.columns(min(2, len(comparison_plots)))
             for i, plot_file in enumerate(comparison_plots):
                 with cols[i % 2]:
-                    display_image(model_files[plot_file], f">>> {plot_file.replace('.png', '').replace('_', ' ').upper()} <<<")
+                    display_image(model_files[plot_file], f"{plot_file.replace('.png', '').replace('_', ' ').upper()}")
         
         if roc_plots:
-            st.subheader("📈 >>> ROC CURVE ANALYSIS <<<")
+            st.subheader("📈 ROC CURVE ANALYSIS")
             for plot_file in roc_plots:
-                display_image(model_files[plot_file], f">>> {plot_file.replace('.png', '').replace('_', ' ').upper()} <<<")
+                display_image(model_files[plot_file], f"{plot_file.replace('.png', '').replace('_', ' ').upper()}")
         
         if other_plots:
-            st.subheader("📊 >>> ADDITIONAL VISUALIZATIONS <<<")
+            st.subheader("📊 ADDITIONAL VISUALIZATIONS")
             cols = st.columns(min(2, len(other_plots)))
             for i, plot_file in enumerate(other_plots):
                 with cols[i % 2]:
-                    display_image(model_files[plot_file], f">>> {plot_file.replace('.png', '').replace('_', ' ').upper()} <<<")
+                    display_image(model_files[plot_file], f"{plot_file.replace('.png', '').replace('_', ' ').upper()}")
     else:
-        st.info(">>> WARNING: No visualization files (.png) detected in system <<<")
+        st.info("WARNING: No visualization files (.png) detected in system")
 
 with tab4:
-    st.header("📋 >>> FILE SYSTEM BROWSER <<<")
+    st.header("📋 FILE SYSTEM BROWSER")
     
     # Show all files in directory
-    st.subheader(f"📁 >>> FILES IN {selected_model}/ DIRECTORY <<<")
+    st.subheader(f"📁 FILES IN {selected_model}/ DIRECTORY")
     
     file_types = {}
     for filename, filepath in model_files.items():
@@ -625,10 +625,10 @@ with tab4:
         file_types[ext].append(filename)
     
     for ext, files in file_types.items():
-        with st.expander(f"📄 >>> {ext.upper()} FILES ({len(files)}) <<<"):
+        with st.expander(f"📄 {ext.upper()} FILES ({len(files)})"):
             for filename in files:
                 filepath = model_files[filename]
-                st.write(f"**>>> {filename} <<<**")
+                st.write(f"**{filename}**")
                 
                 if filename.endswith('.csv'):
                     if st.button(f"📊 LOAD_DATA: {filename}", key=f"view_{filename}"):
@@ -641,22 +641,22 @@ with tab4:
                         try:
                             with open(filepath, 'r', encoding='utf-8') as f:
                                 content = f.read()
-                            st.text_area(f">>> CONTENT OF {filename} <<<", content, height=300)
+                            st.text_area(f"CONTENT OF {filename}", content, height=300)
                         except Exception as e:
                             st.error(f"ERROR reading {filename}: {e}")
                 
                 elif filename.endswith('.png'):
                     if st.button(f"🖼️ DISPLAY: {filename}", key=f"view_{filename}"):
-                        display_image(filepath, f">>> {filename} <<<")
+                        display_image(filepath, f"{filename}")
 
 with tab5:
-    st.header("🔧 >>> JUPYTER NOTEBOOK CONTROL PANEL <<<")
+    st.header("🔧 JUPYTER NOTEBOOK CONTROL PANEL")
     
     # Check if main.ipynb exists
     notebook_path = os.path.join(selected_model, "main.ipynb")
     
     if os.path.exists(notebook_path):
-        st.success("✅ >>> NOTEBOOK STATUS: ONLINE <<<")
+        st.success("✅ NOTEBOOK STATUS: ONLINE")
         
         col1, col2, col3 = st.columns(3)
         
@@ -664,14 +664,14 @@ with tab5:
             if st.button("🔄 CONVERT_TO_PYTHON"):
                 python_path = os.path.join(selected_model, "main_converted.py")
                 
-                with st.spinner(">>> CONVERTING NOTEBOOK... <<<"):
+                with st.spinner("CONVERTING NOTEBOOK..."):
                     success, result = convert_notebook_to_python(notebook_path, python_path)
                     
                     if success:
-                        st.success("✅ >>> CONVERSION SUCCESSFUL <<<")
-                        st.text_area(">>> PYTHON CODE PREVIEW <<<", result[:500] + "..." if len(result) > 500 else result, height=200)
+                        st.success("✅ CONVERSION SUCCESSFUL")
+                        st.text_area("PYTHON CODE PREVIEW", result[:500] + "..." if len(result) > 500 else result, height=200)
                     else:
-                        st.error(f"❌ >>> CONVERSION FAILED: {result} <<<")
+                        st.error(f"❌ CONVERSION FAILED: {result}")
         
         with col2:
             if st.button("🚀 EXECUTE_OPTIMIZATION"):
@@ -680,7 +680,7 @@ with tab5:
                     st.session_state.execution_status[selected_model] = "Running"
                     st.rerun()
                 else:
-                    st.error("❌ >>> ERROR: Convert notebook to Python first! <<<")
+                    st.error("❌ ERROR: Convert notebook to Python first!")
         
         with col3:
             if st.button("📓 VIEW_NOTEBOOK_DATA"):
@@ -692,15 +692,15 @@ with tab5:
                     try:
                         nb_data = json.loads(content)
                         if 'cells' in nb_data:
-                            st.write(f"📊 >>> NOTEBOOK CONTAINS {len(nb_data['cells'])} CELLS <<<")
+                            st.write(f"📊 NOTEBOOK CONTAINS {len(nb_data['cells'])} CELLS")
                             
                             # Show first few code cells
                             code_cells = [cell for cell in nb_data['cells'] if cell.get('cell_type') == 'code']
                             if code_cells:
-                                st.write(f"🔍 >>> DETECTED {len(code_cells)} CODE CELLS <<<")
+                                st.write(f"🔍 DETECTED {len(code_cells)} CODE CELLS")
                                 st.code(str(code_cells[0].get('source', [''])[:3]), language='python')
                     except:
-                        st.text_area(">>> RAW NOTEBOOK CONTENT (FIRST 1000 CHARS) <<<", content[:1000])
+                        st.text_area("RAW NOTEBOOK CONTENT (FIRST 1000 CHARS)", content[:1000])
                         
                 except Exception as e:
                     st.error(f"ERROR reading notebook: {e}")
@@ -709,7 +709,7 @@ with tab5:
         if st.session_state.execution_status.get(selected_model) == "Running":
             python_path = os.path.join(selected_model, "main_converted.py")
             
-            with st.spinner(f">>> EXECUTING {selected_model} OPTIMIZATION... <<<"):
+            with st.spinner(f"EXECUTING {selected_model} OPTIMIZATION..."):
                 try:
                     result = subprocess.run(
                         [sys.executable, "main_converted.py"],
@@ -721,49 +721,49 @@ with tab5:
                     
                     if result.returncode == 0:
                         st.session_state.execution_status[selected_model] = "Completed"
-                        st.success(f"✅ >>> {selected_model} OPTIMIZATION COMPLETED! <<<")
-                        st.text_area(">>> EXECUTION OUTPUT <<<", result.stdout, height=200)
+                        st.success(f"✅ {selected_model} OPTIMIZATION COMPLETED!")
+                        st.text_area("EXECUTION OUTPUT", result.stdout, height=200)
                     else:
                         st.session_state.execution_status[selected_model] = "Error"
-                        st.error(f"❌ >>> {selected_model} OPTIMIZATION FAILED! <<<")
-                        st.text_area(">>> ERROR LOG <<<", result.stderr, height=200)
+                        st.error(f"❌ {selected_model} OPTIMIZATION FAILED!")
+                        st.text_area("ERROR LOG", result.stderr, height=200)
                 
                 except subprocess.TimeoutExpired:
                     st.session_state.execution_status[selected_model] = "Error"
-                    st.error("❌ >>> EXECUTION TIMEOUT! <<<")
+                    st.error("❌ EXECUTION TIMEOUT!")
                 except Exception as e:
                     st.session_state.execution_status[selected_model] = "Error"
-                    st.error(f"❌ >>> EXECUTION ERROR: {e} <<<")
+                    st.error(f"❌ EXECUTION ERROR: {e}")
                 
                 st.rerun()
     else:
-        st.warning("❌ >>> main.ipynb NOT FOUND IN SYSTEM <<<")
+        st.warning("❌ main.ipynb NOT FOUND IN SYSTEM")
 
 # Footer with hacker styling
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #00ff00; font-family: 'Courier New', monospace;">
-    <p>🚀 >>> DENSENET OPTIMIZATION NEURAL NETWORK DASHBOARD | POWERED BY STREAMLIT <<<</p>
-    <p>📊 >>> ANALYZE HYPERPARAMETER OPTIMIZATION RESULTS AND VISUALIZATIONS <<<</p>
-    <p style="font-size: 0.8em; color: #00aa00;">>>> SYSTEM STATUS: ONLINE | READY FOR NEURAL NETWORK ANALYSIS <<<</p>
+    <p>🚀 DENSENET OPTIMIZATION NEURAL NETWORK DASHBOARD | POWERED BY STREAMLIT</p>
+    <p>📊 ANALYZE HYPERPARAMETER OPTIMIZATION RESULTS AND VISUALIZATIONS</p>
+    <p style="font-size: 0.8em; color: #00aa00;">SYSTEM STATUS: ONLINE | READY FOR NEURAL NETWORK ANALYSIS</p>
 </div>
 """, unsafe_allow_html=True)
 
 # Sidebar file browser with hacker styling
 st.sidebar.markdown("---")
-st.sidebar.subheader(f"📁 >>> {selected_model} FILE SYSTEM <<<")
+st.sidebar.subheader(f"📁 {selected_model} FILE SYSTEM")
 
 if model_files:
     for filename in sorted(model_files.keys()):
         file_icon = "📊" if filename.endswith('.csv') else "🖼️" if filename.endswith('.png') else "📝" if filename.endswith(('.txt', '.md')) else "📓" if filename.endswith('.ipynb') else "📄"
-        st.sidebar.text(f"{file_icon} >>> {filename} <<<")
+        st.sidebar.text(f"{file_icon} {filename}")
 else:
-    st.sidebar.info(">>> NO FILES DETECTED <<<")
+    st.sidebar.info("NO FILES DETECTED")
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("ℹ️ >>> SYSTEM INFO <<<")
+st.sidebar.subheader("ℹ️ SYSTEM INFO")
 st.sidebar.info("""
->>> NEURAL NETWORK ANALYSIS DASHBOARD <<<
+NEURAL NETWORK ANALYSIS DASHBOARD
 
 FUNCTIONS:
 - 🏆 View optimal hyperparameters
@@ -772,7 +772,7 @@ FUNCTIONS:
 - 📋 Browse system data files
 - 🔧 Manage Jupyter notebook execution
 
->>> SELECT DIFFERENT MODELS TO COMPARE RESULTS <<<
+SELECT DIFFERENT MODELS TO COMPARE RESULTS
 
->>> SYSTEM STATUS: ONLINE <<<
+SYSTEM STATUS: ONLINE
 """)
