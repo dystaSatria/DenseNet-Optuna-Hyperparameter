@@ -11,7 +11,7 @@ import base64
 
 # Page configuration
 st.set_page_config(
-    page_title="DenseNet Hyperparameter Optimization",
+    page_title="Alzheimer Classification | DenseNet Hyperparameter Optimization",
     page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded"
