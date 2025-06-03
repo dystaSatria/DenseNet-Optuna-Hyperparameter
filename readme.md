@@ -58,7 +58,7 @@ This repository contains a comprehensive deep learning solution for **Alzheimer'
 - **Image Processing**: OpenCV, PIL, scikit-image
 - **Web Interface**: Streamlit
 - **Dataset**: ADNI (Alzheimer's Disease Neuroimaging Initiative)
-- **Image Size**: 224x224 pixels
+- **Image Size**: 150x150 pixels
 - **Batch Size**: Optimized through hyperparameter tuning (16-64)
 - **Learning Rate**: Dynamically optimized (1e-5 to 1e-2)
 - **Optimizer**: Adam with custom scheduling
