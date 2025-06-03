@@ -66,7 +66,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title
-st.markdown('<h1 class="main-header">🧠 DenseNet Hyperparameter Optimization Dashboard</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">🧠 Alzheimer Classification | DenseNet Hyperparameter Optimization Dashboard</h1>', unsafe_allow_html=True)
 
 # Sidebar
 st.sidebar.header("🔧 Configuration")
