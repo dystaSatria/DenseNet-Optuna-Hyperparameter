@@ -6,6 +6,8 @@ import pandas as pd
 import json
 from pathlib import Path
 import time
+from PIL import Image
+import base64
 
 # Page configuration
 st.set_page_config(
@@ -34,32 +36,37 @@ st.markdown("""
         border-left: 5px solid #667eea;
         margin: 1rem 0;
     }
-    .status-running {
-        color: #ffa500;
-        font-weight: bold;
-    }
     .status-completed {
         color: #28a745;
+        font-weight: bold;
+    }
+    .status-running {
+        color: #ffa500;
         font-weight: bold;
     }
     .status-error {
         color: #dc3545;
         font-weight: bold;
     }
-    .notebook-preview {
-        background-color: #f8f9fa;
-        border-left: 3px solid #007bff;
+    .metric-card {
+        background-color: #f0f2f6;
         padding: 1rem;
+        border-radius: 10px;
+        border-left: 5px solid #28a745;
         margin: 0.5rem 0;
-        border-radius: 5px;
-        font-family: monospace;
-        font-size: 0.9rem;
+    }
+    .results-section {
+        background-color: #fff;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin: 1rem 0;
     }
 </style>
 """, unsafe_allow_html=True)
 
 # Title
-st.markdown('<h1 class="main-header">🧠 DenseNet Hyperparameter Optimization Runner</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-header">🧠 DenseNet Hyperparameter Optimization Dashboard</h1>', unsafe_allow_html=True)
 
 # Sidebar
 st.sidebar.header("🔧 Configuration")
@@ -71,98 +78,73 @@ available_dirs = []
 
 # Check which directories exist
 for model_dir in model_dirs:
-    if os.path.exists(model_dir) and os.path.exists(os.path.join(model_dir, "main.ipynb")):
+    if os.path.exists(model_dir):
         available_dirs.append(model_dir)
 
 if not available_dirs:
-    st.error("❌ No model directories with main.ipynb found!")
-    st.info("Make sure you have folders: DenseNet121, DenseNet169, DenseNet201 with main.ipynb files")
-    
-    # Show current directory structure for debugging
-    st.subheader("📁 Current Directory Structure")
-    try:
-        current_files = os.listdir(".")
-        st.write("**Files in current directory:**", current_files)
-        
-        for item in current_files:
-            if os.path.isdir(item):
-                try:
-                    sub_files = os.listdir(item)
-                    st.write(f"**Files in {item}/:**", sub_files)
-                except:
-                    st.write(f"**{item}/:** Cannot access")
-    except Exception as e:
-        st.error(f"Cannot read directory: {e}")
-    
+    st.error("❌ No model directories found!")
+    st.info("Make sure you have folders: DenseNet121, DenseNet169, DenseNet201")
     st.stop()
 
 # Sidebar options
 st.sidebar.subheader("🎯 Model Selection")
-selected_models = st.sidebar.multiselect(
-    "Select models to run:",
+selected_model = st.sidebar.selectbox(
+    "Select model to analyze:",
     available_dirs,
-    default=available_dirs,
-    help="Choose which DenseNet models to optimize"
+    help="Choose which DenseNet model to analyze"
 )
-
-# Run options
-st.sidebar.subheader("⚙️ Run Options")
-run_mode = st.sidebar.radio(
-    "Execution Mode:",
-    ["Convert & Execute", "Display Only"],
-    help="Convert: Convert .ipynb to .py then run\nDisplay: Show interface only"
-)
-
-# Advanced options
-st.sidebar.subheader("🔧 Advanced Settings")
-show_output = st.sidebar.checkbox("Show execution output", value=True)
-timeout_minutes = st.sidebar.number_input("Timeout (minutes)", min_value=5, max_value=180, value=60)
 
 # Initialize session state
 if 'execution_status' not in st.session_state:
     st.session_state.execution_status = {}
-if 'execution_logs' not in st.session_state:
-    st.session_state.execution_logs = {}
 
-# Main content
-st.header("🚀 Notebook Execution Dashboard")
+# Function to check what files exist in a directory
+def get_directory_files(model_dir):
+    """Get all files in the model directory"""
+    files = {}
+    if os.path.exists(model_dir):
+        for item in os.listdir(model_dir):
+            item_path = os.path.join(model_dir, item)
+            if os.path.isfile(item_path):
+                files[item] = item_path
+    return files
 
-# Function to read notebook file and show preview
-def get_notebook_preview(notebook_path, max_lines=10):
-    """Get preview of notebook file"""
-    try:
-        with open(notebook_path, 'r', encoding='utf-8') as f:
-            content = f.read()
-        
-        # Try to parse as JSON to extract code cells
+# Function to read best hyperparameters
+def read_best_hyperparameters(model_dir):
+    """Read best hyperparameters from text file"""
+    hyperparam_file = os.path.join(model_dir, "best_hyperparameters.txt")
+    if os.path.exists(hyperparam_file):
         try:
-            import json
-            nb_data = json.loads(content)
-            
-            if 'cells' in nb_data:
-                code_cells = []
-                for cell in nb_data['cells']:
-                    if cell.get('cell_type') == 'code' and cell.get('source'):
-                        source = cell['source']
-                        if isinstance(source, list):
-                            source = ''.join(source)
-                        code_cells.append(source)
-                
-                if code_cells:
-                    preview = code_cells[0][:500] + "..." if len(code_cells[0]) > 500 else code_cells[0]
-                    return preview, len(code_cells)
+            with open(hyperparam_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            return content
         except:
-            pass
-        
-        # Fallback: show raw content preview
-        lines = content.split('\n')
-        preview_lines = lines[:max_lines]
-        return '\n'.join(preview_lines) + f"\n... ({len(lines)} total lines)", 0
-        
-    except Exception as e:
-        return f"Error reading file: {e}", 0
+            return None
+    return None
 
-# Function to convert notebook to python
+# Function to load CSV data
+def load_csv_data(file_path):
+    """Load CSV file and return DataFrame"""
+    try:
+        df = pd.read_csv(file_path)
+        return df
+    except Exception as e:
+        st.error(f"Error loading {file_path}: {e}")
+        return None
+
+# Function to display image
+def display_image(image_path, caption=""):
+    """Display image with caption"""
+    try:
+        if os.path.exists(image_path):
+            image = Image.open(image_path)
+            st.image(image, caption=caption, use_container_width=True)
+            return True
+    except Exception as e:
+        st.error(f"Error loading image {image_path}: {e}")
+    return False
+
+# Function to convert notebook to python (simplified)
 def convert_notebook_to_python(notebook_path, output_path):
     """Convert notebook to Python using simple parsing"""
     try:
@@ -197,316 +179,327 @@ def convert_notebook_to_python(notebook_path, output_path):
     except Exception as e:
         return False, str(e)
 
-# Function to execute Python script
-def execute_python_script(script_path, working_dir):
-    """Execute Python script in specified directory"""
-    try:
-        original_dir = os.getcwd()
-        os.chdir(working_dir)
-        
-        result = subprocess.run(
-            [sys.executable, script_path],
-            capture_output=True,
-            text=True,
-            timeout=timeout_minutes * 60
-        )
-        
-        os.chdir(original_dir)
-        
-        return result.returncode == 0, result.stdout, result.stderr
-        
-    except subprocess.TimeoutExpired:
-        os.chdir(original_dir)
-        return False, "", f"Execution timed out ({timeout_minutes} minutes)"
-    except Exception as e:
-        os.chdir(original_dir)
-        return False, "", str(e)
+# Main content
+st.header(f"🚀 {selected_model} Analysis Dashboard")
 
-# Function to check if results exist
-def check_results_exist(model_dir):
-    """Check if optimization results exist"""
-    results_files = [
-        os.path.join(model_dir, "best_params.json"),
-        os.path.join(model_dir, "optimization_history.csv"),
-        os.path.join(model_dir, "study.pkl"),
-        os.path.join(model_dir, "main_converted.py")
-    ]
-    existing_files = [f for f in results_files if os.path.exists(f)]
-    return len(existing_files) > 0, existing_files
+# Get files in selected directory
+model_files = get_directory_files(selected_model)
 
-# Model status overview
-st.subheader("📊 Model Status Overview")
+# Display overview
+col1, col2, col3 = st.columns(3)
 
-cols = st.columns(len(available_dirs))
-for i, model_dir in enumerate(available_dirs):
-    with cols[i]:
-        has_results, result_files = check_results_exist(model_dir)
-        status = st.session_state.execution_status.get(model_dir, "Not Started")
+with col1:
+    csv_files = [f for f in model_files.keys() if f.endswith('.csv')]
+    st.metric("📊 CSV Files", len(csv_files))
+
+with col2:
+    png_files = [f for f in model_files.keys() if f.endswith('.png')]
+    st.metric("📈 Visualizations", len(png_files))
+
+with col3:
+    has_notebook = 'main.ipynb' in model_files
+    st.metric("📓 Notebook", "✅" if has_notebook else "❌")
+
+# Status card
+st.markdown(f"""
+<div class="folder-card">
+    <h4>📁 {selected_model} Status</h4>
+    <p><strong>Directory:</strong> {selected_model}/</p>
+    <p><strong>Total Files:</strong> {len(model_files)}</p>
+    <p><strong>Has Results:</strong> {"✅ Yes" if len(csv_files) > 0 else "❌ No"}</p>
+    <p><strong>Has Visualizations:</strong> {"✅ Yes" if len(png_files) > 0 else "❌ No"}</p>
+</div>
+""", unsafe_allow_html=True)
+
+# Tabs for different sections
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏆 Best Results", "📊 Metrics Analysis", "📈 Visualizations", "📋 All Data", "🔧 Notebook Management"])
+
+with tab1:
+    st.header("🏆 Best Hyperparameters & Results")
+    
+    # Load best hyperparameters
+    best_params = read_best_hyperparameters(selected_model)
+    if best_params:
+        st.subheader("📝 Best Hyperparameters")
+        st.text_area("Hyperparameters:", best_params, height=200)
+    else:
+        st.info("No best_hyperparameters.txt file found")
+    
+    # Show key metrics files
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        # Best hybrid metrics
+        best_hybrid_file = os.path.join(selected_model, "best_hybrid_per_class_metrics.csv")
+        if os.path.exists(best_hybrid_file):
+            st.subheader("🎯 Best Hybrid Model Metrics")
+            df_hybrid = load_csv_data(best_hybrid_file)
+            if df_hybrid is not None:
+                st.dataframe(df_hybrid, use_container_width=True)
+    
+    with col2:
+        # DenseNet metrics
+        densenet_metrics_file = os.path.join(selected_model, "densenet_per_class_metrics.csv")
+        if os.path.exists(densenet_metrics_file):
+            st.subheader("🧠 DenseNet Model Metrics")
+            df_densenet = load_csv_data(densenet_metrics_file)
+            if df_densenet is not None:
+                st.dataframe(df_densenet, use_container_width=True)
+    
+    # ROC AUC Comparison
+    roc_file = os.path.join(selected_model, "roc_auc_comparison.csv")
+    if os.path.exists(roc_file):
+        st.subheader("📈 ROC AUC Comparison")
+        df_roc = load_csv_data(roc_file)
+        if df_roc is not None:
+            st.dataframe(df_roc, use_container_width=True)
+            
+            # Create a simple bar chart if possible
+            if len(df_roc.columns) >= 2:
+                try:
+                    chart_data = df_roc.set_index(df_roc.columns[0])
+                    st.bar_chart(chart_data)
+                except:
+                    pass
+
+with tab2:
+    st.header("📊 Detailed Metrics Analysis")
+    
+    # All models metrics
+    all_models_file = os.path.join(selected_model, "all_models_metrics.csv")
+    if os.path.exists(all_models_file):
+        st.subheader("🔍 All Models Comparison")
+        df_all = load_csv_data(all_models_file)
+        if df_all is not None:
+            st.dataframe(df_all, use_container_width=True)
+            
+            # Show summary statistics
+            if not df_all.empty:
+                st.subheader("📈 Summary Statistics")
+                numeric_cols = df_all.select_dtypes(include=['float64', 'int64']).columns
+                if len(numeric_cols) > 0:
+                    st.dataframe(df_all[numeric_cols].describe(), use_container_width=True)
+    
+    # SVM Optimization Results
+    svm_file = os.path.join(selected_model, "svm_optimization_results.csv")
+    if os.path.exists(svm_file):
+        st.subheader("⚙️ SVM Optimization Results")
+        df_svm = load_csv_data(svm_file)
+        if df_svm is not None:
+            st.dataframe(df_svm.head(20), use_container_width=True)
+            
+            # Show best SVM results
+            if 'score' in df_svm.columns or 'accuracy' in df_svm.columns:
+                score_col = 'score' if 'score' in df_svm.columns else 'accuracy'
+                best_svm = df_svm.loc[df_svm[score_col].idxmax()]
+                st.subheader("🏅 Best SVM Configuration")
+                st.json(best_svm.to_dict())
+
+with tab3:
+    st.header("📈 Visualizations")
+    
+    # Display all PNG files
+    png_files = [f for f in model_files.keys() if f.endswith('.png')]
+    
+    if png_files:
+        # Organize visualizations by category
+        confusion_matrices = [f for f in png_files if 'confusion' in f.lower()]
+        training_plots = [f for f in png_files if 'training' in f.lower() or 'history' in f.lower()]
+        comparison_plots = [f for f in png_files if 'comparison' in f.lower()]
+        roc_plots = [f for f in png_files if 'roc' in f.lower()]
+        other_plots = [f for f in png_files if f not in confusion_matrices + training_plots + comparison_plots + roc_plots]
         
-        if status == "Running":
-            status_color = "🟡"
-            status_text = "status-running"
-        elif status == "Completed":
-            status_color = "🟢"
-            status_text = "status-completed"
-        elif status == "Error":
-            status_color = "🔴"
-            status_text = "status-error"
-        else:
-            status_color = "⚪"
-            status_text = ""
+        if confusion_matrices:
+            st.subheader("🎯 Confusion Matrices")
+            cols = st.columns(min(2, len(confusion_matrices)))
+            for i, plot_file in enumerate(confusion_matrices):
+                with cols[i % 2]:
+                    display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
         
-        st.markdown(f"""
-        <div class="folder-card">
-            <h4>{status_color} {model_dir}</h4>
-            <p><strong>Status:</strong> <span class="{status_text}">{status}</span></p>
-            <p><strong>Results:</strong> {"✅ Available" if has_results else "❌ Not Available"}</p>
-            <p><strong>File:</strong> 📓 main.ipynb</p>
-        </div>
-        """, unsafe_allow_html=True)
+        if training_plots:
+            st.subheader("📚 Training History")
+            for plot_file in training_plots:
+                display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
+        
+        if comparison_plots:
+            st.subheader("⚖️ Model Comparisons")
+            cols = st.columns(min(2, len(comparison_plots)))
+            for i, plot_file in enumerate(comparison_plots):
+                with cols[i % 2]:
+                    display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
+        
+        if roc_plots:
+            st.subheader("📈 ROC Curves")
+            for plot_file in roc_plots:
+                display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
+        
+        if other_plots:
+            st.subheader("📊 Other Visualizations")
+            cols = st.columns(min(2, len(other_plots)))
+            for i, plot_file in enumerate(other_plots):
+                with cols[i % 2]:
+                    display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
+    else:
+        st.info("No visualization files (.png) found in this directory")
 
-# Individual model controls
-st.header("🎮 Individual Model Controls")
+with tab4:
+    st.header("📋 All Files & Data")
+    
+    # Show all files in directory
+    st.subheader(f"📁 Files in {selected_model}/")
+    
+    file_types = {}
+    for filename, filepath in model_files.items():
+        ext = filename.split('.')[-1] if '.' in filename else 'no extension'
+        if ext not in file_types:
+            file_types[ext] = []
+        file_types[ext].append(filename)
+    
+    for ext, files in file_types.items():
+        with st.expander(f"📄 {ext.upper()} Files ({len(files)})"):
+            for filename in files:
+                filepath = model_files[filename]
+                st.write(f"**{filename}**")
+                
+                if filename.endswith('.csv'):
+                    if st.button(f"📊 View {filename}", key=f"view_{filename}"):
+                        df = load_csv_data(filepath)
+                        if df is not None:
+                            st.dataframe(df, use_container_width=True)
+                
+                elif filename.endswith('.txt') or filename.endswith('.md'):
+                    if st.button(f"📝 View {filename}", key=f"view_{filename}"):
+                        try:
+                            with open(filepath, 'r', encoding='utf-8') as f:
+                                content = f.read()
+                            st.text_area(f"Content of {filename}:", content, height=300)
+                        except Exception as e:
+                            st.error(f"Error reading {filename}: {e}")
+                
+                elif filename.endswith('.png'):
+                    if st.button(f"🖼️ View {filename}", key=f"view_{filename}"):
+                        display_image(filepath, filename)
 
-for model_dir in selected_models:
-    with st.expander(f"📓 {model_dir} Controls", expanded=True):
-        col1, col2, col3 = st.columns([2, 1, 1])
+with tab5:
+    st.header("🔧 Notebook Management")
+    
+    # Check if main.ipynb exists
+    notebook_path = os.path.join(selected_model, "main.ipynb")
+    
+    if os.path.exists(notebook_path):
+        st.success("✅ main.ipynb found")
+        
+        col1, col2, col3 = st.columns(3)
         
         with col1:
-            st.write(f"**Directory:** `{model_dir}/`")
-            st.write(f"**Notebook:** `{model_dir}/main.ipynb`")
-            
-            # Check if main.ipynb exists and show preview
-            notebook_path = os.path.join(model_dir, "main.ipynb")
-            if os.path.exists(notebook_path):
-                st.success("✅ main.ipynb found")
-                
-                # Show notebook preview
-                preview, num_cells = get_notebook_preview(notebook_path)
-                if preview:
-                    st.write("**Notebook Preview:**")
-                    st.markdown(f"""
-                    <div class="notebook-preview">
-                    {preview}
-                    </div>
-                    """, unsafe_allow_html=True)
-                    if num_cells > 0:
-                        st.info(f"📊 Found {num_cells} code cells in notebook")
-            else:
-                st.error("❌ main.ipynb not found")
-        
-        with col2:
-            # Convert button
-            if st.button(f"🔄 Convert to Python", key=f"convert_{model_dir}"):
-                notebook_path = os.path.join(model_dir, "main.ipynb")
-                python_path = os.path.join(model_dir, "main_converted.py")
+            if st.button("🔄 Convert to Python"):
+                python_path = os.path.join(selected_model, "main_converted.py")
                 
                 with st.spinner("Converting notebook..."):
                     success, result = convert_notebook_to_python(notebook_path, python_path)
                     
                     if success:
                         st.success("✅ Converted successfully!")
-                        st.code(result[:300] + "..." if len(result) > 300 else result, language="python")
+                        st.text_area("Converted Python Code Preview:", result[:500] + "..." if len(result) > 500 else result, height=200)
                     else:
                         st.error(f"❌ Conversion failed: {result}")
-            
-            # Run button
-            if st.button(f"🚀 Run {model_dir}", key=f"run_{model_dir}"):
-                if run_mode != "Display Only":
-                    # Check if converted Python file exists
-                    python_path = os.path.join(model_dir, "main_converted.py")
-                    if os.path.exists(python_path):
-                        st.session_state.execution_status[model_dir] = "Running"
-                        st.rerun()
-                    else:
-                        st.error("❌ Please convert notebook to Python first!")
+        
+        with col2:
+            if st.button("🚀 Run Optimization"):
+                python_path = os.path.join(selected_model, "main_converted.py")
+                if os.path.exists(python_path):
+                    st.session_state.execution_status[selected_model] = "Running"
+                    st.rerun()
                 else:
-                    st.info("Display Only mode - execution disabled")
+                    st.error("❌ Please convert notebook to Python first!")
         
         with col3:
-            # Status and results
-            status = st.session_state.execution_status.get(model_dir, "Not Started")
-            if status == "Running":
-                st.markdown("🟡 **Running...**")
-            elif status == "Completed":
-                st.markdown("🟢 **Completed**")
-            elif status == "Error":
-                st.markdown("🔴 **Error**")
-            else:
-                st.markdown("⚪ **Ready**")
-            
-            # View results button
-            has_results, result_files = check_results_exist(model_dir)
-            if has_results:
-                if st.button(f"📊 View Results", key=f"results_{model_dir}"):
-                    st.session_state[f"show_results_{model_dir}"] = True
+            if st.button("📓 View Notebook Content"):
+                try:
+                    with open(notebook_path, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    
+                    # Try to parse notebook JSON
+                    try:
+                        nb_data = json.loads(content)
+                        if 'cells' in nb_data:
+                            st.write(f"📊 Notebook has {len(nb_data['cells'])} cells")
+                            
+                            # Show first few code cells
+                            code_cells = [cell for cell in nb_data['cells'] if cell.get('cell_type') == 'code']
+                            if code_cells:
+                                st.write(f"🔍 Found {len(code_cells)} code cells")
+                                st.code(str(code_cells[0].get('source', [''])[:3]), language='python')
+                    except:
+                        st.text_area("Raw notebook content (first 1000 chars):", content[:1000])
+                        
+                except Exception as e:
+                    st.error(f"Error reading notebook: {e}")
         
         # Execute if status is Running
-        if st.session_state.execution_status.get(model_dir) == "Running":
-            python_path = os.path.join(model_dir, "main_converted.py")
+        if st.session_state.execution_status.get(selected_model) == "Running":
+            python_path = os.path.join(selected_model, "main_converted.py")
             
-            with st.spinner(f"Executing {model_dir} optimization..."):
-                success, stdout, stderr = execute_python_script("main_converted.py", model_dir)
+            with st.spinner(f"Executing {selected_model} optimization..."):
+                try:
+                    result = subprocess.run(
+                        [sys.executable, "main_converted.py"],
+                        cwd=selected_model,
+                        capture_output=True,
+                        text=True,
+                        timeout=3600  # 1 hour timeout
+                    )
+                    
+                    if result.returncode == 0:
+                        st.session_state.execution_status[selected_model] = "Completed"
+                        st.success(f"✅ {selected_model} optimization completed!")
+                        st.text_area("Output:", result.stdout, height=200)
+                    else:
+                        st.session_state.execution_status[selected_model] = "Error"
+                        st.error(f"❌ {selected_model} optimization failed!")
+                        st.text_area("Error:", result.stderr, height=200)
                 
-                if success:
-                    st.session_state.execution_status[model_dir] = "Completed"
-                    st.success(f"✅ {model_dir} optimization completed successfully!")
-                else:
-                    st.session_state.execution_status[model_dir] = "Error"
-                    st.error(f"❌ {model_dir} optimization failed!")
-                
-                # Store logs
-                st.session_state.execution_logs[model_dir] = {
-                    "stdout": stdout,
-                    "stderr": stderr,
-                    "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
-                    "method": "converted_python"
-                }
-                
-                if show_output and (stdout or stderr):
-                    st.subheader(f"📝 Execution Output for {model_dir}")
-                    if stdout:
-                        st.text_area("Output:", stdout, height=200, key=f"stdout_{model_dir}")
-                    if stderr:
-                        st.text_area("Errors:", stderr, height=100, key=f"stderr_{model_dir}")
+                except subprocess.TimeoutExpired:
+                    st.session_state.execution_status[selected_model] = "Error"
+                    st.error("❌ Execution timed out!")
+                except Exception as e:
+                    st.session_state.execution_status[selected_model] = "Error"
+                    st.error(f"❌ Execution error: {e}")
                 
                 st.rerun()
-        
-        # Show results if requested
-        if st.session_state.get(f"show_results_{model_dir}", False):
-            st.subheader(f"📊 Results for {model_dir}")
-            
-            has_results, result_files = check_results_exist(model_dir)
-            
-            if result_files:
-                st.write("**Available result files:**")
-                for file_path in result_files:
-                    filename = os.path.basename(file_path)
-                    st.write(f"- 📁 {filename}")
-                    
-                    if filename.endswith('.json'):
-                        try:
-                            with open(file_path, 'r') as f:
-                                data = json.load(f)
-                            st.json(data)
-                        except Exception as e:
-                            st.error(f"Could not read {filename}: {e}")
-                    
-                    elif filename.endswith('.csv'):
-                        try:
-                            df = pd.read_csv(file_path)
-                            st.dataframe(df.head(10))
-                            
-                            # Simple visualization if possible
-                            if 'value' in df.columns:
-                                st.line_chart(df['value'])
-                        except Exception as e:
-                            st.error(f"Could not read {filename}: {e}")
-                    
-                    elif filename.endswith('.py'):
-                        try:
-                            with open(file_path, 'r') as f:
-                                code = f.read()
-                            st.code(code[:1000] + "..." if len(code) > 1000 else code, language='python')
-                        except Exception as e:
-                            st.error(f"Could not read {filename}: {e}")
-            
-            if st.button(f"❌ Close Results", key=f"close_results_{model_dir}"):
-                st.session_state[f"show_results_{model_dir}"] = False
-                st.rerun()
-
-# Batch operations
-st.header("🔄 Batch Operations")
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    if st.button("🔄 Convert All Notebooks"):
-        for model in selected_models:
-            notebook_path = os.path.join(model, "main.ipynb")
-            python_path = os.path.join(model, "main_converted.py")
-            
-            if os.path.exists(notebook_path):
-                success, result = convert_notebook_to_python(notebook_path, python_path)
-                if success:
-                    st.success(f"✅ {model} converted")
-                else:
-                    st.error(f"❌ {model} conversion failed")
-
-with col2:
-    if st.button("🚀 Run All Converted"):
-        if run_mode != "Display Only":
-            for model in selected_models:
-                python_path = os.path.join(model, "main_converted.py")
-                if os.path.exists(python_path):
-                    st.session_state.execution_status[model] = "Running"
-            st.rerun()
-        else:
-            st.info("Display Only mode - execution disabled")
-
-with col3:
-    if st.button("🔄 Reset All Status"):
-        for model in available_dirs:
-            if model in st.session_state.execution_status:
-                del st.session_state.execution_status[model]
-        st.rerun()
-
-# Execution logs
-if st.session_state.execution_logs:
-    st.header("📝 Execution Logs")
-    
-    for model, logs in st.session_state.execution_logs.items():
-        with st.expander(f"📋 {model} Logs - {logs['timestamp']}"):
-            if logs['stdout']:
-                st.subheader("Output")
-                st.code(logs['stdout'])
-            if logs['stderr']:
-                st.subheader("Errors")
-                st.code(logs['stderr'])
+    else:
+        st.warning("❌ main.ipynb not found in this directory")
 
 # Footer
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666;">
-    <p>🚀 DenseNet Notebook Runner (Simplified) | Built with Streamlit</p>
-    <p>📓 Convert and execute Jupyter notebooks for hyperparameter optimization</p>
+    <p>🚀 DenseNet Optimization Results Dashboard | Built with Streamlit</p>
+    <p>📊 Analyze hyperparameter optimization results and visualizations</p>
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar additional info
+# Sidebar file browser
+st.sidebar.markdown("---")
+st.sidebar.subheader(f"📁 {selected_model} Files")
+
+if model_files:
+    for filename in sorted(model_files.keys()):
+        file_icon = "📊" if filename.endswith('.csv') else "🖼️" if filename.endswith('.png') else "📝" if filename.endswith(('.txt', '.md')) else "📓" if filename.endswith('.ipynb') else "📄"
+        st.sidebar.text(f"{file_icon} {filename}")
+else:
+    st.sidebar.info("No files found")
+
 st.sidebar.markdown("---")
 st.sidebar.subheader("ℹ️ About")
 st.sidebar.info("""
-Simplified notebook runner that converts Jupyter notebooks to Python scripts for execution.
+This dashboard analyzes existing optimization results and allows you to:
 
-**Features:**
-- Convert .ipynb to .py files
-- Execute converted Python scripts
-- Monitor execution status
-- View results and logs
+- 🏆 View best hyperparameters
+- 📊 Analyze performance metrics  
+- 📈 Display visualizations
+- 📋 Browse all data files
+- 🔧 Manage Jupyter notebooks
 
-**Requirements:**
-- Each model folder must contain main.ipynb
-- Standard Python environment
-""")
-
-st.sidebar.subheader("📂 Directory Structure")
-st.sidebar.code("""
-DenseNet-Optuna-Hyperparameter/
-├── streamlit_app.py
-├── requirements.txt
-├── DenseNet121/
-│   └── main.ipynb
-├── DenseNet169/
-│   └── main.ipynb
-└── DenseNet201/
-    └── main.ipynb
-""")
-
-st.sidebar.subheader("🔧 Process")
-st.sidebar.info("""
-1. **Convert**: Extract code from .ipynb
-2. **Execute**: Run converted Python script
-3. **Monitor**: Track execution progress
-4. **Results**: View optimization outputs
+Select different models from the dropdown to compare results.
 """)
