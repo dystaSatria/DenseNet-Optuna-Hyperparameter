@@ -232,6 +232,34 @@ st.markdown("""
         font-weight: bold;
     }
     
+    /* Metric values styling */
+    [data-testid="metric-container"] {
+        background: linear-gradient(135deg, #001100 0%, #002200 100%);
+        border: 2px solid #00aa00;
+        border-radius: 10px;
+        padding: 1rem;
+        box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+    }
+    
+    [data-testid="metric-container"] [data-testid="metric-value"] {
+        color: #00ff00 !important;
+        font-family: 'Courier New', monospace !important;
+        font-weight: bold !important;
+        font-size: 2rem !important;
+        text-shadow: 0 0 10px #00ff00;
+    }
+    
+    [data-testid="metric-container"] [data-testid="metric-label"] {
+        color: #00cc00 !important;
+        font-family: 'Courier New', monospace !important;
+        font-weight: bold !important;
+        text-transform: uppercase;
+    }
+    
+    [data-testid="metric-container"] .metric-container > div {
+        color: #00ff00 !important;
+    }
+    
     /* Expanders */
     .streamlit-expanderHeader {
         background-color: #111111;
@@ -472,7 +500,7 @@ with col3:
 st.markdown(f"""
 <div class="folder-card">
     <h4>📁 {selected_model} SYSTEM STATUS</h4>
-    <p ><strong>[DIRECTORY]:</strong> {selected_model}/</p>
+    <p><strong>[DIRECTORY]:</strong> {selected_model}/</p>
     <p><strong>[TOTAL_FILES]:</strong> {len(model_files)}</p>
     <p><strong>[RESULTS_STATUS]:</strong> {"✅ AVAILABLE" if len(csv_files) > 0 else "❌ NOT_FOUND"}</p>
     <p><strong>[VISUALIZATION_STATUS]:</strong> {"✅ AVAILABLE" if len(png_files) > 0 else "❌ NOT_FOUND"}</p>
@@ -481,7 +509,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # Tabs for different sections
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["OPTIMAL_RESULTS", "METRICS_ANALYSIS", "DATA_VISUALIZATION", "FILE_SYSTEM", "NOTEBOOK_CONTROL"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏆 OPTIMAL_RESULTS", "📊 METRICS_ANALYSIS", "📈 DATA_VISUALIZATION", "📋 FILE_SYSTEM", "🔧 NOTEBOOK_CONTROL"])
 
 with tab1:
     st.header("🏆 OPTIMAL HYPERPARAMETERS & PERFORMANCE METRICS")
