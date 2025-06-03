@@ -509,7 +509,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # Tabs for different sections
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏆 OPTIMAL_RESULTS", "📊 METRICS_ANALYSIS", "📈 DATA_VISUALIZATION", "📋 FILE_SYSTEM", "🔧 NOTEBOOK_CONTROL"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([" OPTIMAL_RESULTS ", " METRICS_ANALYSIS ", " DATA_VISUALIZATION ", " FILE_SYSTEM ", " NOTEBOOK_CONTROL "])
 
 with tab1:
     st.header("🏆 OPTIMAL HYPERPARAMETERS & PERFORMANCE METRICS")
