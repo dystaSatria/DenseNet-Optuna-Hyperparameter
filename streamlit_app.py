@@ -806,7 +806,7 @@ st.markdown("""
     <br>
     <div style="margin: 20px 0;">
         <a href="https://github.com/dystaSatria" target="_blank" style="text-decoration: none;">
-            <img src="87264688.png" alt="dystaSatria" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #00ff00; box-shadow: 0 0 15px rgba(0, 255, 0, 0.5); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 0 25px rgba(0, 255, 0, 0.8)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 15px rgba(0, 255, 0, 0.5)';">
+            <img src="https://github.com/dystaSatria/DenseNet-Optuna-Hyperparameter/blob/main/87264688.png" alt="dystaSatria" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #00ff00; box-shadow: 0 0 15px rgba(0, 255, 0, 0.5); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 0 25px rgba(0, 255, 0, 0.8)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 15px rgba(0, 255, 0, 0.5)';">
         </a>
     </div>
     <p style="font-size: 0.7em; color: #00aa00; margin-top: 10px;">
