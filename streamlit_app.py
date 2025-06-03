@@ -71,7 +71,7 @@ st.markdown("""
         overflow: hidden;
         white-space: nowrap;
         border-right: 3px solid #00ff00;
-        animation: typing 15s steps(50) infinite, blink-caret 1s step-end infinite;
+        animation: typing 15s steps(50) infinite, blink-caret 0.75s step-end infinite;
         width: 100%;
         max-width: fit-content;
         margin-left: auto;
