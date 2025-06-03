@@ -17,7 +17,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Dark Hacker Theme CSS
 st.markdown("""
 <style>
     /* Global Dark Theme */
@@ -525,7 +524,7 @@ with col3:
     has_notebook = 'main.ipynb' in model_files
     st.metric("📓 JUPYTER NOTEBOOK", "ONLINE" if has_notebook else "OFFLINE")
 
-# Status card with hacker styling
+
 st.markdown(f"""
 <div class="folder-card">
     <h4>📁 {selected_model} SYSTEM STATUS</h4>
@@ -800,8 +799,8 @@ with tab5:
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #00ff00; font-family: 'Courier New', monospace;">
-    <p>🚀 DENSENET OPTIMIZATION NEURAL NETWORK DASHBOARD | POWERED BY STREAMLIT</p>
-    <p>📊 ANALYZE HYPERPARAMETER OPTIMIZATION RESULTS AND VISUALIZATIONS</p>
+    <p>DENSENET OPTIMIZATION NEURAL NETWORK DASHBOARD | POWERED BY STREAMLIT</p>
+    <p>ANALYZE HYPERPARAMETER OPTIMIZATION RESULTS AND VISUALIZATIONS</p>
     <p style="font-size: 0.8em; color: #00aa00;">SYSTEM STATUS: ONLINE | READY FOR NEURAL NETWORK ANALYSIS</p>
 </div>
 """, unsafe_allow_html=True)
