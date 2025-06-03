@@ -67,7 +67,6 @@ st.markdown("""
         text-align: center;
         margin-bottom: 2rem;
         color: #00ff00;
-        text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
         font-family: 'Courier New', monospace;
         overflow: hidden;
         white-space: nowrap;
