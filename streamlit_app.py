@@ -458,15 +458,15 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     csv_files = [f for f in model_files.keys() if f.endswith('.csv')]
-    st.metric("📊 DATA FILES", len(csv_files))
+    st.metric("DATA FILES", len(csv_files))
 
 with col2:
     png_files = [f for f in model_files.keys() if f.endswith('.png')]
-    st.metric("📈 VISUALIZATIONS", len(png_files))
+    st.metric("VISUALIZATIONS", len(png_files))
 
 with col3:
     has_notebook = 'main.ipynb' in model_files
-    st.metric("📓 JUPYTER NOTEBOOK", "ONLINE" if has_notebook else "OFFLINE")
+    st.metric(" JUPYTER NOTEBOOK", "ONLINE" if has_notebook else "OFFLINE")
 
 # Status card with hacker styling
 st.markdown(f"""
