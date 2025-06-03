@@ -817,7 +817,7 @@ def get_base64_image(image_path):
 
 # Display clickable image
 if os.path.exists("87264688.png"):
-    img_base64 = get_base64_image("87264688.png")
+    img_base64 = get_base64_image("https://github.com/dystaSatria/DenseNet-Optuna-Hyperparameter/blob/main/87264688.png")
     if img_base64:
         st.markdown(f"""
         <div style="text-align: center; margin: 20px 0;">
