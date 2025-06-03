@@ -472,7 +472,7 @@ with col3:
 st.markdown(f"""
 <div class="folder-card">
     <h4>📁 {selected_model} SYSTEM STATUS</h4>
-    <p style="color:white"><strong>[DIRECTORY]:</strong> {selected_model}/</p>
+    <p ><strong>[DIRECTORY]:</strong> {selected_model}/</p>
     <p><strong>[TOTAL_FILES]:</strong> {len(model_files)}</p>
     <p><strong>[RESULTS_STATUS]:</strong> {"✅ AVAILABLE" if len(csv_files) > 0 else "❌ NOT_FOUND"}</p>
     <p><strong>[VISUALIZATION_STATUS]:</strong> {"✅ AVAILABLE" if len(png_files) > 0 else "❌ NOT_FOUND"}</p>
