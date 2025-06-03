@@ -390,7 +390,7 @@ st.markdown("""
 
 # Title with enhanced hacker styling
 st.markdown('<h1 class="main-header">🧠 ALZHEIMER CLASSIFICATION NEURAL NETWORK</h1>', unsafe_allow_html=True)
-st.markdown('<h1 class="typing-header">DenseNet | Optuna Hyperparameter Optimization</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="typing-header" style="text-align:center;">DenseNet | Optuna Hyperparameter Optimization</h1>', unsafe_allow_html=True)
 st.markdown('<h1></h1>', unsafe_allow_html=True)
 
 # Sidebar
