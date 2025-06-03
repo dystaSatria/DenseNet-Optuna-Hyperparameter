@@ -94,25 +94,6 @@ selected_model = st.sidebar.selectbox(
     help="Choose which DenseNet model to analyze"
 )
 
-# Multi-model comparison option
-if len(available_dirs) > 1:
-    st.sidebar.subheader("⚖️ Model Comparison")
-    compare_mode = st.sidebar.checkbox(
-        "Enable comparison mode",
-        help="Compare metrics across different models"
-    )
-    
-    if compare_mode:
-        comparison_models = st.sidebar.multiselect(
-            "Select models to compare:",
-            available_dirs,
-            default=available_dirs,
-            help="Choose models for comparison"
-        )
-else:
-    compare_mode = False
-    comparison_models = []
-
 # Initialize session state
 if 'execution_status' not in st.session_state:
     st.session_state.execution_status = {}
@@ -127,39 +108,6 @@ def get_directory_files(model_dir):
             if os.path.isfile(item_path):
                 files[item] = item_path
     return files
-
-# Function to get model-specific file patterns
-def get_model_files(model_dir, file_pattern):
-    """Get files matching model-specific patterns"""
-    files = get_directory_files(model_dir)
-    model_num = model_dir.lower().replace('densenet', '')
-    
-    # Create possible patterns based on model
-    patterns = [
-        file_pattern,  # exact match
-        f"densenet{model_num}_{file_pattern}",  # e.g., densenet201_per_class_metrics.csv
-        f"densenet_{file_pattern}",  # e.g., densenet_optimization_results.csv
-        f"{model_dir.lower()}_{file_pattern}",  # e.g., densenet201_confusion_matrix.png
-        # Additional patterns for flexibility
-        file_pattern.replace('.csv', '').replace('.png', ''),  # without extension
-    ]
-    
-    # Find best match
-    for filename in files:
-        filename_lower = filename.lower()
-        for pattern in patterns:
-            if pattern.lower() in filename_lower:
-                return files[filename]
-    
-    # If no pattern match, try partial matching
-    for filename in files:
-        filename_lower = filename.lower()
-        # Extract key parts of the pattern
-        pattern_parts = file_pattern.lower().replace('.csv', '').replace('.png', '').split('_')
-        if all(part in filename_lower for part in pattern_parts if part):
-            return files[filename]
-    
-    return None
 
 # Function to read best hyperparameters
 def read_best_hyperparameters(model_dir):
@@ -232,11 +180,7 @@ def convert_notebook_to_python(notebook_path, output_path):
         return False, str(e)
 
 # Main content
-if compare_mode and len(comparison_models) > 1:
-    st.header(f"⚖️ Multi-Model Analysis Dashboard ({len(comparison_models)} models)")
-    st.info(f"Comparing: {', '.join(comparison_models)}")
-else:
-    st.header(f"🚀 {selected_model} Analysis Dashboard")
+st.header(f"🚀 {selected_model} Analysis Dashboard")
 
 # Get files in selected directory
 model_files = get_directory_files(selected_model)
@@ -268,11 +212,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # Tabs for different sections
-if compare_mode and len(comparison_models) > 1:
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["🏆 Best Results", "📊 Metrics Analysis", "📈 Visualizations", "⚖️ Model Comparison", "📋 All Data", "🔧 Notebook Management"])
-else:
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏆 Best Results", "📊 Metrics Analysis", "📈 Visualizations", "📋 All Data", "🔧 Notebook Management"])
-    tab6 = None
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏆 Best Results", "📊 Metrics Analysis", "📈 Visualizations", "📋 All Data", "🔧 Notebook Management"])
 
 with tab1:
     st.header("🏆 Best Hyperparameters & Results")
@@ -290,29 +230,25 @@ with tab1:
     
     with col1:
         # Best hybrid metrics
-        best_hybrid_file = get_model_files(selected_model, "best_hybrid_per_class_metrics.csv")
-        if best_hybrid_file:
+        best_hybrid_file = os.path.join(selected_model, "best_hybrid_per_class_metrics.csv")
+        if os.path.exists(best_hybrid_file):
             st.subheader("🎯 Best Hybrid Model Metrics")
             df_hybrid = load_csv_data(best_hybrid_file)
             if df_hybrid is not None:
                 st.dataframe(df_hybrid, use_container_width=True)
-        else:
-            st.info("No hybrid model metrics found")
     
     with col2:
-        # DenseNet metrics - try different patterns
-        densenet_metrics_file = get_model_files(selected_model, "per_class_metrics.csv")
-        if densenet_metrics_file:
+        # DenseNet metrics
+        densenet_metrics_file = os.path.join(selected_model, "densenet_per_class_metrics.csv")
+        if os.path.exists(densenet_metrics_file):
             st.subheader("🧠 DenseNet Model Metrics")
             df_densenet = load_csv_data(densenet_metrics_file)
             if df_densenet is not None:
                 st.dataframe(df_densenet, use_container_width=True)
-        else:
-            st.info("No DenseNet model metrics found")
     
     # ROC AUC Comparison
-    roc_file = get_model_files(selected_model, "roc_auc_comparison.csv")
-    if roc_file:
+    roc_file = os.path.join(selected_model, "roc_auc_comparison.csv")
+    if os.path.exists(roc_file):
         st.subheader("📈 ROC AUC Comparison")
         df_roc = load_csv_data(roc_file)
         if df_roc is not None:
@@ -325,15 +261,13 @@ with tab1:
                     st.bar_chart(chart_data)
                 except:
                     pass
-    else:
-        st.info("No ROC AUC comparison data found")
 
 with tab2:
     st.header("📊 Detailed Metrics Analysis")
     
     # All models metrics
-    all_models_file = get_model_files(selected_model, "all_models_metrics.csv")
-    if all_models_file:
+    all_models_file = os.path.join(selected_model, "all_models_metrics.csv")
+    if os.path.exists(all_models_file):
         st.subheader("🔍 All Models Comparison")
         df_all = load_csv_data(all_models_file)
         if df_all is not None:
@@ -345,12 +279,10 @@ with tab2:
                 numeric_cols = df_all.select_dtypes(include=['float64', 'int64']).columns
                 if len(numeric_cols) > 0:
                     st.dataframe(df_all[numeric_cols].describe(), use_container_width=True)
-    else:
-        st.info("No all models metrics found")
     
     # SVM Optimization Results
-    svm_file = get_model_files(selected_model, "svm_optimization_results.csv")
-    if svm_file:
+    svm_file = os.path.join(selected_model, "svm_optimization_results.csv")
+    if os.path.exists(svm_file):
         st.subheader("⚙️ SVM Optimization Results")
         df_svm = load_csv_data(svm_file)
         if df_svm is not None:
@@ -362,23 +294,6 @@ with tab2:
                 best_svm = df_svm.loc[df_svm[score_col].idxmax()]
                 st.subheader("🏅 Best SVM Configuration")
                 st.json(best_svm.to_dict())
-    else:
-        st.info("No SVM optimization results found")
-    
-    # DenseNet Optimization Results
-    densenet_opt_file = get_model_files(selected_model, "densenet_optimization_results.csv")
-    if densenet_opt_file:
-        st.subheader("🧠 DenseNet Optimization Results")
-        df_densenet_opt = load_csv_data(densenet_opt_file)
-        if df_densenet_opt is not None:
-            st.dataframe(df_densenet_opt.head(20), use_container_width=True)
-            
-            # Show best DenseNet results
-            if 'value' in df_densenet_opt.columns or 'score' in df_densenet_opt.columns:
-                score_col = 'value' if 'value' in df_densenet_opt.columns else 'score'
-                best_densenet = df_densenet_opt.loc[df_densenet_opt[score_col].idxmax()]
-                st.subheader("🏅 Best DenseNet Configuration")
-                st.json(best_densenet.to_dict())
 
 with tab3:
     st.header("📈 Visualizations")
@@ -387,17 +302,12 @@ with tab3:
     png_files = [f for f in model_files.keys() if f.endswith('.png')]
     
     if png_files:
-        # Organize visualizations by category - more flexible patterns
+        # Organize visualizations by category
         confusion_matrices = [f for f in png_files if 'confusion' in f.lower()]
-        training_plots = [f for f in png_files if any(word in f.lower() for word in ['training', 'history'])]
+        training_plots = [f for f in png_files if 'training' in f.lower() or 'history' in f.lower()]
         comparison_plots = [f for f in png_files if 'comparison' in f.lower()]
         roc_plots = [f for f in png_files if 'roc' in f.lower()]
-        optimization_plots = [f for f in png_files if 'optimization' in f.lower()]
-        param_plots = [f for f in png_files if any(word in f.lower() for word in ['param', 'importance'])]
-        precision_recall_plots = [f for f in png_files if any(word in f.lower() for word in ['precision', 'recall'])]
-        
-        # Remove duplicates by creating sets
-        used_files = set()
+        other_plots = [f for f in png_files if f not in confusion_matrices + training_plots + comparison_plots + roc_plots]
         
         if confusion_matrices:
             st.subheader("🎯 Confusion Matrices")
@@ -405,58 +315,24 @@ with tab3:
             for i, plot_file in enumerate(confusion_matrices):
                 with cols[i % 2]:
                     display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
-                    used_files.add(plot_file)
         
         if training_plots:
             st.subheader("📚 Training History")
             for plot_file in training_plots:
-                if plot_file not in used_files:
-                    display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
-                    used_files.add(plot_file)
-        
-        if optimization_plots:
-            st.subheader("⚙️ Optimization History")
-            cols = st.columns(min(2, len(optimization_plots)))
-            for i, plot_file in enumerate(optimization_plots):
-                if plot_file not in used_files:
-                    with cols[i % 2]:
-                        display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
-                        used_files.add(plot_file)
-        
-        if param_plots:
-            st.subheader("📊 Parameter Importance")
-            cols = st.columns(min(2, len(param_plots)))
-            for i, plot_file in enumerate(param_plots):
-                if plot_file not in used_files:
-                    with cols[i % 2]:
-                        display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
-                        used_files.add(plot_file)
-        
-        if precision_recall_plots:
-            st.subheader("📈 Precision-Recall Curves")
-            for plot_file in precision_recall_plots:
-                if plot_file not in used_files:
-                    display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
-                    used_files.add(plot_file)
+                display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
         
         if comparison_plots:
             st.subheader("⚖️ Model Comparisons")
             cols = st.columns(min(2, len(comparison_plots)))
             for i, plot_file in enumerate(comparison_plots):
-                if plot_file not in used_files:
-                    with cols[i % 2]:
-                        display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
-                        used_files.add(plot_file)
+                with cols[i % 2]:
+                    display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
         
         if roc_plots:
             st.subheader("📈 ROC Curves")
             for plot_file in roc_plots:
-                if plot_file not in used_files:
-                    display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
-                    used_files.add(plot_file)
+                display_image(model_files[plot_file], plot_file.replace('.png', '').replace('_', ' ').title())
         
-        # Show any remaining plots
-        other_plots = [f for f in png_files if f not in used_files]
         if other_plots:
             st.subheader("📊 Other Visualizations")
             cols = st.columns(min(2, len(other_plots)))
@@ -466,101 +342,7 @@ with tab3:
     else:
         st.info("No visualization files (.png) found in this directory")
 
-if tab6:  # Model Comparison tab
-    with tab6:
-        st.header("⚖️ Cross-Model Comparison")
-        
-        if len(comparison_models) > 1:
-            # Compare ROC AUC across models
-            st.subheader("📈 ROC AUC Comparison Across Models")
-            roc_comparison_data = {}
-            
-            for model in comparison_models:
-                roc_file = get_model_files(model, "roc_auc_comparison.csv")
-                if roc_file:
-                    df_roc = load_csv_data(roc_file)
-                    if df_roc is not None and not df_roc.empty:
-                        roc_comparison_data[model] = df_roc
-            
-            if roc_comparison_data:
-                # Create a combined comparison
-                combined_roc = pd.DataFrame()
-                for model, df in roc_comparison_data.items():
-                    df_temp = df.copy()
-                    df_temp['Model'] = model
-                    combined_roc = pd.concat([combined_roc, df_temp], ignore_index=True)
-                
-                st.dataframe(combined_roc, use_container_width=True)
-                
-                # Try to create a comparison chart
-                try:
-                    if 'Model' in combined_roc.columns and len(combined_roc.columns) > 2:
-                        numeric_cols = combined_roc.select_dtypes(include=['float64', 'int64']).columns
-                        if len(numeric_cols) > 0:
-                            comparison_metric = st.selectbox("Select metric to compare:", numeric_cols)
-                            chart_data = combined_roc.pivot_table(
-                                index=combined_roc.columns[0], 
-                                columns='Model', 
-                                values=comparison_metric,
-                                aggfunc='mean'
-                            )
-                            st.bar_chart(chart_data)
-                except Exception as e:
-                    st.info("Could not create comparison chart")
-            
-            # Compare best hyperparameters
-            st.subheader("🎯 Best Hyperparameters Comparison")
-            
-            hyperparams_comparison = {}
-            for model in comparison_models:
-                best_params = read_best_hyperparameters(model)
-                if best_params:
-                    hyperparams_comparison[model] = best_params
-            
-            if hyperparams_comparison:
-                cols = st.columns(len(hyperparams_comparison))
-                for i, (model, params) in enumerate(hyperparams_comparison.items()):
-                    with cols[i]:
-                        st.subheader(f"📝 {model}")
-                        st.text_area(f"{model} params:", params, height=200, key=f"params_{model}")
-            
-            # Compare all models metrics
-            st.subheader("📊 All Models Metrics Comparison")
-            
-            all_metrics_comparison = {}
-            for model in comparison_models:
-                all_models_file = get_model_files(model, "all_models_metrics.csv")
-                if all_models_file:
-                    df_all = load_csv_data(all_models_file)
-                    if df_all is not None:
-                        all_metrics_comparison[model] = df_all
-            
-            if all_metrics_comparison:
-                # Show side by side comparison
-                cols = st.columns(len(all_metrics_comparison))
-                for i, (model, df) in enumerate(all_metrics_comparison.items()):
-                    with cols[i]:
-                        st.subheader(f"📊 {model}")
-                        st.dataframe(df, height=300, use_container_width=True)
-                
-                # Try to create a summary comparison
-                st.subheader("📈 Summary Comparison")
-                summary_data = []
-                for model, df in all_metrics_comparison.items():
-                    if not df.empty:
-                        numeric_cols = df.select_dtypes(include=['float64', 'int64']).columns
-                        if len(numeric_cols) > 0:
-                            summary = df[numeric_cols].mean()
-                            summary['Model'] = model
-                            summary_data.append(summary)
-                
-                if summary_data:
-                    summary_df = pd.DataFrame(summary_data)
-                    st.dataframe(summary_df, use_container_width=True)
-        else:
-            st.info("Please select at least 2 models for comparison")
-
-with tab4 if not tab6 else tab5:
+with tab4:
     st.header("📋 All Files & Data")
     
     # Show all files in directory
@@ -598,7 +380,7 @@ with tab4 if not tab6 else tab5:
                     if st.button(f"🖼️ View {filename}", key=f"view_{filename}"):
                         display_image(filepath, filename)
 
-with tab5 if not tab6 else tab6:
+with tab5:
     st.header("🔧 Notebook Management")
     
     # Check if main.ipynb exists
@@ -702,18 +484,6 @@ st.sidebar.markdown("---")
 st.sidebar.subheader(f"📁 {selected_model} Files")
 
 if model_files:
-    # Count files by type
-    csv_count = len([f for f in model_files.keys() if f.endswith('.csv')])
-    png_count = len([f for f in model_files.keys() if f.endswith('.png')])
-    txt_count = len([f for f in model_files.keys() if f.endswith(('.txt', '.md'))])
-    ipynb_count = len([f for f in model_files.keys() if f.endswith('.ipynb')])
-    
-    st.sidebar.metric("📊 CSV Files", csv_count)
-    st.sidebar.metric("🖼️ PNG Files", png_count)
-    st.sidebar.metric("📝 Text Files", txt_count)
-    st.sidebar.metric("📓 Notebooks", ipynb_count)
-    
-    st.sidebar.markdown("### File List")
     for filename in sorted(model_files.keys()):
         file_icon = "📊" if filename.endswith('.csv') else "🖼️" if filename.endswith('.png') else "📝" if filename.endswith(('.txt', '.md')) else "📓" if filename.endswith('.ipynb') else "📄"
         st.sidebar.text(f"{file_icon} {filename}")
@@ -722,8 +492,8 @@ else:
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("ℹ️ About")
-st.sidebar.info(f"""
-This dashboard analyzes {selected_model} optimization results:
+st.sidebar.info("""
+This dashboard analyzes existing optimization results and allows you to:
 
 - 🏆 View best hyperparameters
 - 📊 Analyze performance metrics  
@@ -731,11 +501,5 @@ This dashboard analyzes {selected_model} optimization results:
 - 📋 Browse all data files
 - 🔧 Manage Jupyter notebooks
 
-**Model-specific files detected:**
-- DenseNet{selected_model[-3:]} specific metrics
-- Optimization history plots
-- Parameter importance analysis
-- Model comparison charts
-
-Switch between models to compare results.
+Select different models from the dropdown to compare results.
 """)
