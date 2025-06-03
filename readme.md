@@ -63,19 +63,6 @@ This repository contains a comprehensive deep learning solution for **Alzheimer'
 - **Learning Rate**: Dynamically optimized (1e-5 to 1e-2)
 - **Optimizer**: Adam with custom scheduling
 
-## 📊 Performance Metrics
-
-| Model | Accuracy | Precision | Recall | F1-Score | Training Time |
-|-------|----------|-----------|--------|----------|---------------|
-| DenseNet121 | 96.2% | 95.8% | 96.1% | 95.9% | 2.5 hours |
-| DenseNet169 | 97.8% | 97.2% | 97.6% | 97.4% | 3.2 hours |
-| DenseNet201 | **98.5%** | **98.1%** | **98.3%** | **98.2%** | 4.8 hours |
-
-### Confusion Matrix Results (DenseNet201)
-- **Non-Demented**: 99.1% accuracy
-- **Very Mild Demented**: 97.8% accuracy
-- **Mild Demented**: 98.2% accuracy
-- **Moderate Demented**: 98.9% accuracy
 
 ## 🚀 Quick Start
 
