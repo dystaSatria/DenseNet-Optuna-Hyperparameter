@@ -796,16 +796,24 @@ with tab5:
     else:
         st.warning("❌ main.ipynb NOT FOUND IN SYSTEM")
 
-# Footer with hacker styling
+# Footer with hacker styling and dystaSatria landmark
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #00ff00; font-family: 'Courier New', monospace;">
     <p>🚀 DENSENET OPTIMIZATION NEURAL NETWORK DASHBOARD | POWERED BY STREAMLIT</p>
     <p>📊 ANALYZE HYPERPARAMETER OPTIMIZATION RESULTS AND VISUALIZATIONS</p>
     <p style="font-size: 0.8em; color: #00aa00;">SYSTEM STATUS: ONLINE | READY FOR NEURAL NETWORK ANALYSIS</p>
+    <br>
+    <div style="margin: 20px 0;">
+        <a href="https://github.com/dystaSatria" target="_blank" style="text-decoration: none;">
+            <img src="87264688.png" alt="dystaSatria" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid #00ff00; box-shadow: 0 0 15px rgba(0, 255, 0, 0.5); transition: all 0.3s ease;" onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 0 25px rgba(0, 255, 0, 0.8)';" onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 15px rgba(0, 255, 0, 0.5)';">
+        </a>
+    </div>
+    <p style="font-size: 0.7em; color: #00aa00; margin-top: 10px;">
+        Created by <a href="https://github.com/dystaSatria" target="_blank" style="color: #00ff00; text-decoration: none; text-shadow: 0 0 5px #00ff00;">dystaSatria</a>
+    </p>
 </div>
 """, unsafe_allow_html=True)
-
 # Sidebar file browser with hacker styling
 st.sidebar.markdown("---")
 st.sidebar.subheader(f"📁 {selected_model} FILE SYSTEM")
