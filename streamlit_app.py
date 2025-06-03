@@ -458,21 +458,21 @@ col1, col2, col3 = st.columns(3)
 
 with col1:
     csv_files = [f for f in model_files.keys() if f.endswith('.csv')]
-    st.metric("DATA FILES", len(csv_files))
+    st.metric("📊 DATA FILES", len(csv_files))
 
 with col2:
     png_files = [f for f in model_files.keys() if f.endswith('.png')]
-    st.metric("VISUALIZATIONS", len(png_files))
+    st.metric("📈 VISUALIZATIONS", len(png_files))
 
 with col3:
     has_notebook = 'main.ipynb' in model_files
-    st.metric(" JUPYTER NOTEBOOK", "ONLINE" if has_notebook else "OFFLINE")
+    st.metric("📓 JUPYTER NOTEBOOK", "ONLINE" if has_notebook else "OFFLINE")
 
 # Status card with hacker styling
 st.markdown(f"""
 <div class="folder-card">
     <h4>📁 {selected_model} SYSTEM STATUS</h4>
-    <p><strong>[DIRECTORY]:</strong> {selected_model}/</p>
+    <p style="color:white"><strong>[DIRECTORY]:</strong> {selected_model}/</p>
     <p><strong>[TOTAL_FILES]:</strong> {len(model_files)}</p>
     <p><strong>[RESULTS_STATUS]:</strong> {"✅ AVAILABLE" if len(csv_files) > 0 else "❌ NOT_FOUND"}</p>
     <p><strong>[VISUALIZATION_STATUS]:</strong> {"✅ AVAILABLE" if len(png_files) > 0 else "❌ NOT_FOUND"}</p>
@@ -481,7 +481,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # Tabs for different sections
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏆 OPTIMAL_RESULTS", "📊 METRICS_ANALYSIS", "📈 DATA_VISUALIZATION", "📋 FILE_SYSTEM", "🔧 NOTEBOOK_CONTROL"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([" OPTIMAL_RESULTS", "METRICS_ANALYSIS", "DATA_VISUALIZATION", "FILE_SYSTEM", "NOTEBOOK_CONTROL"])
 
 with tab1:
     st.header("🏆 OPTIMAL HYPERPARAMETERS & PERFORMANCE METRICS")
