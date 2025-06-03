@@ -67,11 +67,12 @@ st.markdown("""
         text-align: center;
         margin-bottom: 2rem;
         color: #00ff00;
+        text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
         font-family: 'Courier New', monospace;
         overflow: hidden;
         white-space: nowrap;
         border-right: 3px solid #00ff00;
-        animation: typing 15s steps(50) infinite, blink-caret 0.75s step-end infinite;
+        animation: typing 4s steps(50) infinite, blink-caret 0.75s step-end infinite;
         width: 100%;
         max-width: fit-content;
         margin-left: auto;
@@ -390,8 +391,7 @@ st.markdown("""
 
 # Title with enhanced hacker styling
 st.markdown('<h1 class="main-header">🧠 ALZHEIMER CLASSIFICATION NEURAL NETWORK</h1>', unsafe_allow_html=True)
-st.markdown('<h1 class="typing-header" style="text-align:center;">DenseNet | Optuna Hyperparameter Optimization</h1>', unsafe_allow_html=True)
-st.markdown('<h1></h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="typing-header">DenseNet | Optuna Hyperparameter Optimization</h1>', unsafe_allow_html=True)
 
 # Sidebar
 st.sidebar.header("🔧 SYSTEM CONFIGURATION")
@@ -538,7 +538,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # Tabs for different sections
-tab1, tab2, tab3, tab4, tab5 = st.tabs(["OPTIMAL_RESULTS", "METRICS_ANALYSIS", "DATA_VISUALIZATION", "FILE_SYSTEM", "NOTEBOOK_CONTROL"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs(["🏆 OPTIMAL_RESULTS", "📊 METRICS_ANALYSIS", "📈 DATA_VISUALIZATION", "📋 FILE_SYSTEM", "🔧 NOTEBOOK_CONTROL"])
 
 with tab1:
     st.header("🏆 OPTIMAL HYPERPARAMETERS & PERFORMANCE METRICS")
