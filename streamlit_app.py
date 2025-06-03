@@ -806,64 +806,6 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# dystaSatria landmark with clickable image
-def get_base64_image(image_path):
-    """Convert image to base64 string"""
-    try:
-        with open(image_path, "rb") as img_file:
-            return base64.b64encode(img_file.read()).decode()
-    except:
-        return None
-
-# Display clickable image
-if os.path.exists("https://github.com/dystaSatria/DenseNet-Optuna-Hyperparameter/blob/main/87264688.png"):
-    img_base64 = get_base64_image("https://github.com/dystaSatria/DenseNet-Optuna-Hyperparameter/blob/main/87264688.png")
-    if img_base64:
-        st.markdown(f"""
-        <div style="text-align: center; margin: 20px 0;">
-            <a href="https://github.com/dystaSatria" target="_blank" style="text-decoration: none;">
-                <img src="data:image/png;base64,{img_base64}" 
-                     alt="dystaSatria" 
-                     style="width: 70px; height: 70px; border-radius: 50%; border: 3px solid #00ff00; 
-                            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5); transition: all 0.3s ease;
-                            cursor: pointer;"
-                     onmouseover="this.style.transform='scale(1.1)'; this.style.boxShadow='0 0 25px rgba(0, 255, 0, 0.8)';" 
-                     onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 0 15px rgba(0, 255, 0, 0.5)';">
-            </a>
-        </div>
-        """, unsafe_allow_html=True)
-    else:
-        # Fallback to st.image if base64 fails
-        col1, col2, col3 = st.columns([1, 1, 1])
-        with col2:
-            image = Image.open("87264688.png")
-            st.image(image, width=70)
-            st.markdown("""
-            <div style="text-align: center;">
-                <a href="https://github.com/dystaSatria" target="_blank" style="color: #00ff00; text-decoration: none; font-family: 'Courier New', monospace; font-size: 0.8em;">
-                    🔗 dystaSatria GitHub
-                </a>
-            </div>
-            """, unsafe_allow_html=True)
-else:
-    # Fallback if image doesn't exist
-    st.markdown("""
-    <div style="text-align: center; margin: 20px 0;">
-        <a href="https://github.com/dystaSatria" target="_blank" style="color: #00ff00; text-decoration: none; font-family: 'Courier New', monospace; font-size: 1.2em;">
-            🚀 dystaSatria
-        </a>
-    </div>
-    """, unsafe_allow_html=True)
-
-# Creator credit
-st.markdown("""
-<div style="text-align: center;">
-    <p style="font-size: 0.7em; color: #00aa00; margin-top: 10px; font-family: 'Courier New', monospace;">
-        Created by <a href="https://github.com/dystaSatria" target="_blank" style="color: #00ff00; text-decoration: none; text-shadow: 0 0 5px #00ff00;">dystaSatria</a>
-    </p>
-</div>
-""", unsafe_allow_html=True)
-
 # Sidebar file browser with hacker styling
 st.sidebar.markdown("---")
 st.sidebar.subheader(f"📁 {selected_model} FILE SYSTEM")
