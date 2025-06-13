@@ -67,7 +67,7 @@ st.markdown("""
 
 # Title
 st.markdown('<h1 class="main-header">🧠 Alzheimer Classification Hyperparameter Optimization</h1>', unsafe_allow_html=True)
-st.markdown('<h2 class="main-header">DenseNet | Optuna</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class="main-header"></h2>', unsafe_allow_html=True)
 
 # Sidebar
 st.sidebar.header("🔧 Configuration")
@@ -475,8 +475,8 @@ with tab5:
 st.markdown("---")
 st.markdown("""
 <div style="text-align: center; color: #666;">
-    <p>🚀 DenseNet Optimization Results Dashboard | Built with Streamlit</p>
-    <p>📊 Analyze hyperparameter optimization results and visualizations</p>
+    <p>DenseNet Optimization Results Dashboard | Built with Streamlit</p>
+    <p>Analyze hyperparameter optimization results and visualizations</p>
 </div>
 """, unsafe_allow_html=True)
 
